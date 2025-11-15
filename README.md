@@ -20,36 +20,31 @@ this project setup ipip-tunnel in mikrotik local remote to hongkong
 > Linux name: `ip tunnel add mode ipip`
 
 ## Flow – How IPIP Works
+## MikroTik → Real Hong Kong Multi-IP Setup (2025 Production Version)
 
 ```mermaid
 flowchart LR
-    %% Nodes – must be quoted when containing ( ) or \n
-    A["Local Server<br>192.168.88.11<br>wants google.com"]
-    B["Local Router<br>203.0.113.10"]
-    C["IP-IP Tunnel<br>(Protocol 4)"]
-    D["HONG KONG VPS<br>Main: 103.123.456.10<br><br>Extra IPs on lo:<br>103.123.456.11<br>103.123.456.12<br>103.123.456.13<br>103.123.456.14<br>103.123.456.15 ← current<br>103.123.456.16<br>… up to .250"]
-    E["Internet<br>google.com<br>youtube.com<br>etc."]
+    A["Your Local Devices<br>192.168.88.0/24<br>Phones, PCs, VMs, Docker…"]
+    B["Your MikroTik Router<br>WAN IP: 203.0.113.10"]
+    C["IP-IP Tunnel<br>/interface ipip"]
+    D["HONG KONG VPS<br>Main IP: 103.123.456.10<br><br>200+ Real IPs on lo:<br>103.123.456.11<br>103.123.456.12 ← current<br>103.123.456.13<br>…<br>103.123.456.250"]
+    E["Internet<br>Google · YouTube · TikTok<br>Apple · OpenAI · etc."]
 
-    %% Connections
     A --> B
-    B -->|"1. Encapsulates packet"| C
+    B -->|"1. All traffic → ipip tunnel"| C
     C --> D
-    D -->|"2. Decapsulates<br>3. Forwards using real HK IP"| E
+    D -->|"2. Decapsulates<br>3. src-nat → real HK IP"| E
+    E -->|"Reply → 103.123.456.12"| D
+    D -->|"4. Policy routing → back into tunnel"| C --> B --> A
 
-    %% Return path
-    E -->|"Reply → 103.123.456.15"| D
-    D -->|"4. Policy route → tunnel"| C
-    C --> B --> A
-
-    %% Styling
     classDef local    fill:#1e293b, color:#fff
-    classDef router   fill:#dc2626, color:#fff
+    classDef mikrotik fill:#dc2626, color:#fff, stroke:#991b1b, stroke-width:3px
     classDef tunnel   fill:#7c3aed, color:#fff
-    classDef vps      fill:#16a34a, color:#fff, font-weight:bold
-    classDef internet fill:#0ea5e9, color:#fff
+    classDef vps      fill:#16a34a, color:#fff, font-weight:bold, stroke:#15803d
+    classDef inet     fill:#0ea5e9, color:#fff
 
     class A local
-    class B router
+    class B mikrotik
     class C tunnel
     class D vps
-    class E internet;
+    class E inet
