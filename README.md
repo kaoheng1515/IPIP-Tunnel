@@ -23,44 +23,16 @@ this project setup ipip-tunnel in mikrotik local remote to hongkong
 
 ```mermaid
 flowchart LR
-    %% Local side
-    A[Local Server\n192.168.88.11\nwants google.com]
+    A[Local Server<br>192.168.88.11<br>wants google.com] 
+    --> B[Local Router<br>203.0.113.10]
+    B -->|Encapsulates| C[IP-IP Tunnel]
+    C --> D[Hong Kong VPS<br>103.123.456.10]
+    D -->|Decapsulates & forwards<br>with Src: 103.123.456.x| E[Internet<br>google.com]
 
-    %% Local router (your public IP)
-    B[Local Router\n203.0.113.10]
-
-    %% Tunnel
-    C[IP-IP Tunnel\n(Protocol 4)]
-
-    %% Hong Kong VPS — now clearly showing multiple IPs
-    D[HONG KONG VPS\nMain: 103.123.456.10\n\nExtra IPs on lo:\n103.123.456.11\n103.123.456.12\n103.123.456.13\n103.123.456.14\n103.123.456.15 ← current\n103.123.456.16\n... up to .250]
-
-    %% Internet
-    E[Internet\ngoogle.com\nyoutube.com\netc.]
-
-    %% Flow
-    A --> B
-    B -->|1. Encapsulates packet| C
-    C --> D
-    D -->|2. Decapsulates\n3. Forwards using one of the\n    real HK IPs as source| E
-
-    %% Return path
-    E -->|Reply → 103.123.456.15| D
-    D -->|4. Policy route → tunnel| C
-    C --> B --> A
-
-    %% Styling — professional & clean
-    classDef local fill:#2d3748,color:#fff,rx:10px,ry:10px
-    classDef router fill:#f56565,color:#fff,rx:10px,ry:10px
-    classDef tunnel fill:#805ad5,color:#fff,rx:10px,ry:10px
-    classDef vps fill:#48bb78,color:#fff,rx:10px,ry:10px,font-weight:bold
-    classDef internet fill:#3182ce,color:#fff,rx:10px,ry:10px
-
-    class A local
-    class B router
-    class C tunnel
-    class D vps
-    class E internet
+    style A fill:#2d3748,color:#fff
+    style B fill:#f56565,color:#fff
+    style D fill:#48bb78,color:#fff
+    style E fill:#3182ce,color:#fff
 
 
 ### What this diagram shows perfectly:
