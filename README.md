@@ -20,33 +20,37 @@ this project setup ipip-tunnel in mikrotik local remote to hongkong
 > Linux name: `ip tunnel add mode ipip`
 
 ## Flow – How IPIP Works
+## Flow – How IP-IP Works with Multi-IP Hong Kong VPS
 
 ```mermaid
 flowchart LR
-    A[Local Server<br>192.168.88.11<br>wants google.com] 
-    --> B[Local Router<br>203.0.113.10]
-    B -->|Encapsulates| C[IP-IP Tunnel]
-    C --> D[Hong Kong VPS<br>103.123.456.10]
-    D -->|Decapsulates & forwards<br>with Src: 103.123.456.x| E[Internet<br>google.com]
+    %% Nodes – must be quoted when containing ( ) or \n
+    A["Local Server<br>192.168.88.11<br>wants google.com"]
+    B["Local Router<br>203.0.113.10"]
+    C["IP-IP Tunnel<br>(Protocol 4)"]
+    D["HONG KONG VPS<br>Main: 103.123.456.10<br><br>Extra IPs on lo:<br>103.123.456.11<br>103.123.456.12<br>103.123.456.13<br>103.123.456.14<br>103.123.456.15 ← current<br>103.123.456.16<br>… up to .250"]
+    E["Internet<br>google.com<br>youtube.com<br>etc."]
 
-    style A fill:#2d3748,color:#fff
-    style B fill:#f56565,color:#fff
-    style D fill:#48bb78,color:#fff
-    style E fill:#3182ce,color:#fff
+    %% Connections
+    A --> B
+    B -->|"1. Encapsulates packet"| C
+    C --> D
+    D -->|"2. Decapsulates<br>3. Forwards using real HK IP"| E
 
+    %% Return path
+    E -->|"Reply → 103.123.456.15"| D
+    D -->|"4. Policy route → tunnel"| C
+    C --> B --> A
 
-### What this diagram shows perfectly:
-- Many local servers (you can have 10 or 500)
-- All go through one router and one IP-IP tunnel
-- Each local server gets its **own dedicated, real Hong Kong IP**
-- 100% clear 1:1 mapping
-- Return traffic works perfectly via policy routing
+    %% Styling
+    classDef local    fill:#1e293b, color:#fff
+    classDef router   fill:#dc2626, color:#fff
+    classDef tunnel   fill:#7c3aed, color:#fff
+    classDef vps      fill:#16a34a, color:#fff, font-weight:bold
+    classDef internet fill:#0ea5e9, color:#fff
 
-Just replace your old code block with this one → GitHub renders it beautifully, instantly professional.
-
-Result in README:
-
-Real 1:1 Multi-Local ↔ Multi-Hong-Kong-IP Setup  
-[Beautiful colored diagram with clear arrows and labels]
-
-Copy → paste → done. Your repo now looks like enterprise-grade documentation.
+    class A local
+    class B router
+    class C tunnel
+    class D vps
+    class E internet
