@@ -21,47 +21,46 @@ this project setup ipip-tunnel in mikrotik local remote to hongkong
 
 ## Flow – How IPIP Works
 
-## Real 1:1 Multi-Local ↔ Multi-Hong-Kong-IP Setup
-
-## Real 1:1 Multi-Local to Multi-Hong-Kong-IP Setup
-
 ```mermaid
 flowchart LR
-    %% Nodes – wrapped safely in quotes
-    A["Local Server 1<br>192.168.88.11 → HK IP .31"]
-    B["Local Server 2<br>192.168.88.12 → HK IP .32"]
-    C["Local Server 3<br>192.168.88.13 → HK IP .33"]
-    Z["...<br>192.168.88.250"]
+    %% Local side
+    A[Local Server\n192.168.88.11\nwants google.com]
 
-    R["Local Router<br>203.0.113.10"]
-    T["IP-IP Tunnel<br>(Protocol 4)"]
-    V["HONG KONG VPS<br>Main IP: 103.123.456.10<br><br>Real extra IPs:<br>103.123.456.31 ← used by .11<br>103.123.456.32 ← used by .12<br>103.123.456.33 ← used by .13<br>...<br>103.123.456.250"]
-    I["Internet<br>google.com<br>etc."]
+    %% Local router (your public IP)
+    B[Local Router\n203.0.113.10]
 
-    %% Connections
-    subgraph "Local Network"
-        A --> R
-        B --> R
-        C --> R
-        Z --> R
-    end
+    %% Tunnel
+    C[IP-IP Tunnel\n(Protocol 4)]
 
-    R -->|"Encapsulates"| T --> V
-    V -->|"Decapsulates +<br>1:1 mapping"| I
-    I -->|"Replies to real HK IPs"| V --> T --> R
+    %% Hong Kong VPS — now clearly showing multiple IPs
+    D[HONG KONG VPS\nMain: 103.123.456.10\n\nExtra IPs on lo:\n103.123.456.11\n103.123.456.12\n103.123.456.13\n103.123.456.14\n103.123.456.15 ← current\n103.123.456.16\n... up to .250]
 
-    %% Styling
-    classDef local fill:#1e293b, color:#fff, stroke:#475569
-    classDef router fill:#dc2626, color:#fff, stroke:#991b1b
-    classDef tunnel fill:#7c3aed, color:#fff, stroke:#6d28d9
-    classDef vps fill:#16a34a, color:#fff, stroke:#15803d, font-weight:bold
-    classDef inet fill:#0ea5e9, color:#fff, stroke:#0369a1
+    %% Internet
+    E[Internet\ngoogle.com\nyoutube.com\netc.]
 
-    class A,B,C,Z local
-    class R router
-    class T tunnel
-    class V vps
-    class I inet
+    %% Flow
+    A --> B
+    B -->|1. Encapsulates packet| C
+    C --> D
+    D -->|2. Decapsulates\n3. Forwards using one of the\n    real HK IPs as source| E
+
+    %% Return path
+    E -->|Reply → 103.123.456.15| D
+    D -->|4. Policy route → tunnel| C
+    C --> B --> A
+
+    %% Styling — professional & clean
+    classDef local fill:#2d3748,color:#fff,rx:10px,ry:10px
+    classDef router fill:#f56565,color:#fff,rx:10px,ry:10px
+    classDef tunnel fill:#805ad5,color:#fff,rx:10px,ry:10px
+    classDef vps fill:#48bb78,color:#fff,rx:10px,ry:10px,font-weight:bold
+    classDef internet fill:#3182ce,color:#fff,rx:10px,ry:10px
+
+    class A local
+    class B router
+    class C tunnel
+    class D vps
+    class E internet
 
 
 ### What this diagram shows perfectly:
