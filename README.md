@@ -54,3 +54,40 @@ flowchart LR
     class C tunnel
     class D vps
     class E internet
+    ## Quick Notes – What You Must Do on Each Router
+
+### 1. Your Local MikroTik Router (203.0.113.10)
+
+| What to configure | Exact commands (copy-paste) |
+|-------------------|-----------------------------|
+| Create IP-IP tunnel | `/interface ipip add name=ipip-hk remote-address=103.123.456.10 keepalive=10s` |
+| Tunnel addresses | `/ip address add address=10.0.0.2/30 interface=ipip-hk` |
+| Default route via tunnel | `/ip route add gateway=10.0.0.1 distance=1` |
+| Current HK IP (change anytime) | `/ip firewall nat add chain=srcnat action=src-nat to-addresses=103.123.456.15 out-interface=ipip-hk comment="HK IP"` |
+| To switch IP instantly | `/ip firewall nat set [find comment="HK IP"] to-addresses=103.123.456.89` |
+
+That’s all on the local MikroTik – no scripts needed.
+
+### 2. Hong Kong VPS (103.123.456.10) – Linux one-time only
+
+```bash
+# Enable forwarding
+sysctl -w net.ipv4.ip_forward=1
+
+# Create tunnel (accepts from any of your IPs)
+ip tunnel add tun0 mode ipip remote any local 103.123.456.10
+ip addr add 10.0.0.1/30 dev tun0
+ip link set tun0 up
+
+# Add all your extra HK IPs to loopback
+for i in {11..250}; do
+  ip addr add 103.123.456.$i/32 dev lo
+done
+
+# Return routing (so replies go back into tunnel)
+ip route add 192.168.88.0/24 dev tun0 scope link     # ← your local LAN here
+echo "200 hk" >> /etc/iproute2/rt_tables
+for i in {11..250}; do
+  ip rule add from 103.123.456.$i lookup hk
+  ip route add default via 10.0.0.2 dev tun0 table hk
+done
