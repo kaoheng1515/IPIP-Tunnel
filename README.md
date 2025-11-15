@@ -23,54 +23,45 @@ this project setup ipip-tunnel in mikrotik local remote to hongkong
 
 ## Real 1:1 Multi-Local ↔ Multi-Hong-Kong-IP Setup
 
+## Real 1:1 Multi-Local to Multi-Hong-Kong-IP Setup
+
 ```mermaid
 flowchart LR
-    %% Local servers
-    Local1["Local Server 1<br>192.168.88.11<br>→ uses HK IP .31"]
-    Local2["Local Server 2<br>192.168.88.12<br>→ uses HK IP .32"]
-    Local3["Local Server 3<br>192.168.88.13<br>→ uses HK IP .33"]
-    LocalN["...<br>192.168.88.250"]
+    %% Nodes – wrapped safely in quotes
+    A["Local Server 1<br>192.168.88.11 → HK IP .31"]
+    B["Local Server 2<br>192.168.88.12 → HK IP .32"]
+    C["Local Server 3<br>192.168.88.13 → HK IP .33"]
+    Z["...<br>192.168.88.250"]
 
-    %% Local router
-    Router["Local Router<br>Public IP: 203.0.113.10"]
-
-    %% Tunnel
-    Tunnel["IP-IP Tunnel<br>(Protocol 4)"]
-
-    %% Hong Kong VPS with many real IPs
-    VPS["HONG KONG VPS<br>Main: 103.123.456.10<br><br>Real IPs on lo:<br>103.123.456.31 ← .11<br>103.123.456.32 ← .12<br>103.123.456.33 ← .13<br>...<br>103.123.456.250"]
-
-    %% Internet
-    Internet["Internet<br>google.com<br>youtube.com<br>etc."]
+    R["Local Router<br>203.0.113.10"]
+    T["IP-IP Tunnel<br>(Protocol 4)"]
+    V["HONG KONG VPS<br>Main IP: 103.123.456.10<br><br>Real extra IPs:<br>103.123.456.31 ← used by .11<br>103.123.456.32 ← used by .12<br>103.123.456.33 ← used by .13<br>...<br>103.123.456.250"]
+    I["Internet<br>google.com<br>etc."]
 
     %% Connections
     subgraph "Local Network"
-        Local1 --> Router
-        Local2 --> Router
-        Local3 --> Router
-        LocalN --> Router
+        A --> R
+        B --> R
+        C --> R
+        Z --> R
     end
 
-    Router -->|"Encapsulates all packets"| Tunnel
-    Tunnel --> VPS
-    VPS -->|"Decapsulates + 1:1 mapping<br>192.168.88.x → 103.123.456.x"| Internet
-
-    Internet -->|"Replies to real HK IPs"| VPS
-    VPS --> Tunnel --> Router
-    Router --> Local1 & Local2 & Local3 & LocalN
+    R -->|"Encapsulates"| T --> V
+    V -->|"Decapsulates +<br>1:1 mapping"| I
+    I -->|"Replies to real HK IPs"| V --> T --> R
 
     %% Styling
-    classDef local fill:#2d3748,color:#fff
-    classDef router fill:#f56565,color:#fff
-    classDef tunnel fill:#805ad5,color:#fff
-    classDef vps fill:#48bb78,color:#fff,font-weight:bold
-    classDef internet fill:#3182ce,color:#fff
+    classDef local fill:#1e293b, color:#fff, stroke:#475569
+    classDef router fill:#dc2626, color:#fff, stroke:#991b1b
+    classDef tunnel fill:#7c3aed, color:#fff, stroke:#6d28d9
+    classDef vps fill:#16a34a, color:#fff, stroke:#15803d, font-weight:bold
+    classDef inet fill:#0ea5e9, color:#fff, stroke:#0369a1
 
-    class Local1,Local2,Local3,LocalN local
-    class Router router
-    class Tunnel tunnel
-    class VPS vps
-    class Internet internet
+    class A,B,C,Z local
+    class R router
+    class T tunnel
+    class V vps
+    class I inet
 
 
 ### What this diagram shows perfectly:
