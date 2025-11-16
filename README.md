@@ -83,7 +83,7 @@ flowchart LR
 | Japan          | `103.45.67.89`       | `10.99.0.1` – `.2`| `103.45.67.100` – `.200`          | VLAN40, Trading PCs                         |
 
 ---
-## 1. HongKong MikroTik HK
+## 1. HongKong MikroTik (HK)
 ```
 routeros
 # === Identity ===
