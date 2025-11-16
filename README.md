@@ -64,20 +64,25 @@ flowchart LR
     class D vps
     class E inet
 ```
-## MikroTik IPIP Tunnel: Local → Hong Kong 
-**One tunnel · One routing table · VLAN support · 1:1 fixed HK IP per VLAN or per device**  
-Tested & working 100% on RouterOS 7.x – November 2025
 
-### Real IPs used in this example
+### Current Setup Overview
 | Item                        | Value                          |
 |-----------------------------|--------------------------------|
-| Cambodia WAN IP             | `203.0.113.50` (ether1)        |
-| Hong Kong main WAN IP       | `103.123.124.1` (ether1)        |
+| Cambodia WAN IP             | `203.0.113.50`       |
+| Hong Kong main WAN IP       | `103.123.124.1`       |
 | Hong Kong extra public IPs  | `103.123.124.2` – `103.123.124.10` |
 | Tunnel point-to-point       | `10.0.0.1` (HK) ↔ `10.0.0.2` (KH) |
 | Cambodia VLANs (example)    | VLAN10, VLAN20, VLAN30, VLAN88 |
 ---
 
+| Location       | Tunnel Peer IP       | Tunnel Local IPs | Public IPs used for 1:1 NAT       | Example VLANs / Devices                     |
+|----------------|----------------------|------------------|------------------------------------|---------------------------------------------|
+| Hong Kong      | `103.123.124.1`      | `10.0.0.1` – `.2`| `103.123.124.2` – `.10`            | VLAN10 (Management), Servers                |
+| Singapore      | `156.123.45.1`       | `10.1.0.1` – `.2`| `156.123.45.10` – `.20`            | VLAN20 (Staff)                              |
+| USA            | `209.123.67.1`       | `10.2.0.1` – `.2`| `209.123.67.20` – `.30`            | VLAN30 (Guests)                             |
+| Japan          | `103.45.67.89`       | `10.99.0.1` – `.2`| `103.45.67.100` – `.200`          | VLAN40, Trading PCs                         |
+
+---
 ## 1. HongKong MikroTik HK
 ```
 routeros
@@ -199,16 +204,6 @@ add chain=input action=accept src-address=10.99.0.0/30 in-interface=tunnel-KH pl
 
 /ip settings set rp-filter=loose
 ```
-
-### Current Setup Overview
-| Location       | Tunnel Peer IP       | Tunnel Local IPs | Public IPs used for 1:1 NAT       | Example VLANs / Devices                     |
-|----------------|----------------------|------------------|------------------------------------|---------------------------------------------|
-| Hong Kong      | `103.123.124.1`      | `10.0.0.1` – `.2`| `103.123.124.2` – `.10`            | VLAN10 (Management), Servers                |
-| Singapore      | `156.123.45.1`       | `10.1.0.1` – `.2`| `156.123.45.10` – `.20`            | VLAN20 (Staff)                              |
-| USA            | `209.123.67.1`       | `10.2.0.1` – `.2`| `209.123.67.20` – `.30`            | VLAN30 (Guests)                             |
-| Japan          | `103.45.67.89`       | `10.99.0.1` – `.2`| `103.45.67.100` – `.200`          | VLAN40, Trading PCs                         |
-
----
 
 ### Local MikroTik – FULL CONFIGURATION
 
