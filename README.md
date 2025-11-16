@@ -19,6 +19,35 @@ this project setup ipip-tunnel in mikrotik local remote to hongkong
 
 > MikroTik name: `/interface ipip`  
 > Linux name: `ip tunnel add mode ipip`
+## Flow – How IPIP Works
+
+```mermaid
+flowchart LR
+    A["Your Local Devices<br>192.168.88.0/24<br>Phones, PCs, VMs, Docker…"]
+    B["Your MikroTik Router<br>WAN IP: 203.0.113.10"]
+    C["IP-IP Tunnel<br>/interface ipip"]
+    D["HONG KONG VPS<br>Main IP: 103.123.456.10<br><br>200+ Real IPs on lo:<br>103.123.456.11<br>103.123.456.12 ← current<br>103.123.456.13<br>…<br>103.123.456.250"]
+    E["Internet<br>Google · YouTube · TikTok<br>Apple · OpenAI · etc."]
+
+    A --> B
+    B -->|"1. All traffic → ipip tunnel"| C
+    C --> D
+    D -->|"2. Decapsulates<br>3. src-nat → real HK IP"| E
+    E -->|"Reply → 103.123.456.12"| D
+    D -->|"4. Policy routing → back into tunnel"| C --> B --> A
+
+    classDef local    fill:#1e293b, color:#fff
+    classDef mikrotik fill:#dc2626, color:#fff, stroke:#991b1b, stroke-width:3px
+    classDef tunnel   fill:#7c3aed, color:#fff
+    classDef vps      fill:#16a34a, color:#fff, font-weight:bold, stroke:#15803d
+    classDef inet     fill:#0ea5e9, color:#fff
+
+    class A local
+    class B mikrotik
+    class C tunnel
+    class D vps
+    class E inet
+```
 ## MikroTik IPIP Tunnel: Local → Hong Kong 
 **One tunnel · One routing table · VLAN support · 1:1 fixed HK IP per VLAN or per device**  
 Tested & working 100% on RouterOS 7.x – November 2025
@@ -107,31 +136,4 @@ add chain=input action=accept src-address=10.0.0.0/30 in-interface=ipip-to-KH pl
 
 
 
-## Flow – How IPIP Works
 
-```mermaid
-flowchart LR
-    A["Your Local Devices<br>192.168.88.0/24<br>Phones, PCs, VMs, Docker…"]
-    B["Your MikroTik Router<br>WAN IP: 203.0.113.10"]
-    C["IP-IP Tunnel<br>/interface ipip"]
-    D["HONG KONG VPS<br>Main IP: 103.123.456.10<br><br>200+ Real IPs on lo:<br>103.123.456.11<br>103.123.456.12 ← current<br>103.123.456.13<br>…<br>103.123.456.250"]
-    E["Internet<br>Google · YouTube · TikTok<br>Apple · OpenAI · etc."]
-
-    A --> B
-    B -->|"1. All traffic → ipip tunnel"| C
-    C --> D
-    D -->|"2. Decapsulates<br>3. src-nat → real HK IP"| E
-    E -->|"Reply → 103.123.456.12"| D
-    D -->|"4. Policy routing → back into tunnel"| C --> B --> A
-
-    classDef local    fill:#1e293b, color:#fff
-    classDef mikrotik fill:#dc2626, color:#fff, stroke:#991b1b, stroke-width:3px
-    classDef tunnel   fill:#7c3aed, color:#fff
-    classDef vps      fill:#16a34a, color:#fff, font-weight:bold, stroke:#15803d
-    classDef inet     fill:#0ea5e9, color:#fff
-
-    class A local
-    class B mikrotik
-    class C tunnel
-    class D vps
-    class E inet
