@@ -5,20 +5,36 @@ this project setup ipip-tunnel in mikrotik local remote to hongkong
 ![GitHub last commit](https://img.shields.io/github/last-commit/kaoheng1515/IPIP-Tunnel?style=flat)
 ![ViewCount](https://views.whatilearened.today/views/github/kaoheng1515/lIPIP-Tunnel.svg?cache=remove)
 
-# Hong Kong Multi-IP Outbound via IP-IP Tunnel
-
 ## What is the IP-IP Tunnel Protocol?
 
-- **Full Name**: IP-in-IP Encapsulation (RFC 2003)
-- **OSI Layer**: Layer 3 (Network layer) → IP packet inside another IP packet
-- **Type**: Stateless, ultra-lightweight tunneling protocol
-- **Encryption**: None (plain text — same as normal Internet traffic)
-- **Typical Use Case**: "Move" your public IP from one location to another  
-  → Your servers physically in Europe/USA but appear 100% in Hong Kong
+**IPIP (IP-in-IP) tunneling** is a simple, lightweight tunneling protocol defined in **RFC 2003** that encapsulates an entire IP packet inside another IP packet.
 
+#### How it works
+1. **Encapsulation**  
+   The original IP packet (the *inner* packet) is treated as payload and wrapped inside a new IP packet (the *outer* packet).
 
-> MikroTik name: `/interface ipip`  
-> Linux name: `ip tunnel add mode ipip`
+2. **Outer header**  
+   Contains the source IP of the tunnel entry point and the destination IP of the tunnel exit point.
+
+3. **Routing**  
+   The outer packet is routed normally across the internet (or any intermediate network) to the remote tunnel endpoint.
+
+4. **Decapsulation**  
+   At the remote endpoint, the outer IP header is stripped off, and the original inner packet is extracted and forwarded to its final destination.
+
+#### Key features & uses
+- **Connectivity** – Connects two private or disjointed networks across the public internet.
+- **Protocol versatility** – Works IPv4-in-IPv4 (what we use), IPv4-in-IPv6 (4in6), IPv6-in-IPv4 (6in4).
+- **VPN capability** – Can be combined with IPsec for encryption when needed.
+- **Simplicity & low overhead** – Only adds a 20-byte IPv4 header → no GRE key, no extra flags → perfect for maximum performance and clean 1:1 public IP mapping.
+
+#### Why we chose IPIP for Cambodia → HK/SG/US/JP (2025)
+- Lowest possible overhead (20 bytes)
+- Original source IP stays untouched until NAT → perfect for fixed 1:1 public IPs
+- Native MikroTik keepalive & MTU handling
+- Works over any ISP without GRE/NAT-T issues
+- Still the fastest and cleanest solution in 2025 for real multi-country public IPs
+
 ## Flow – How IPIP Works
 
 ```mermaid
