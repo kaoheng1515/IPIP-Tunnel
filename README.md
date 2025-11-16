@@ -35,8 +35,8 @@ Tested & working 100% on RouterOS 7.x – November 2025
 ---
 
 ## 1. HongKong MikroTik
-``routeros
-# === Identity ===
+```
+routeros
 # === Identity ===
 /system identity set name=HK-MikroTik
 
@@ -68,9 +68,7 @@ add chain=input action=accept src-address=10.0.0.0/30 in-interface=ipip-to-KH pl
 # === Optional (safe) ===
 /ip settings set rp-filter=loose
 
-
-
-
+```
 
 
 
