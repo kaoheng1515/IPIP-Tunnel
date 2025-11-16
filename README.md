@@ -60,10 +60,9 @@ Tested & working 100% on RouterOS 7.x – November 2025
 | Hong Kong extra public IPs  | `103.123.124.2` – `103.123.124.10` |
 | Tunnel point-to-point       | `10.0.0.1` (HK) ↔ `10.0.0.2` (KH) |
 | Cambodia VLANs (example)    | VLAN10, VLAN20, VLAN30, VLAN88 |
-
 ---
 
-## 1. HongKong MikroTik
+## 1. HongKong MikroTik HK
 ```
 routeros
 # === Identity ===
@@ -96,13 +95,94 @@ add chain=input action=accept src-address=10.0.0.0/30 in-interface=ipip-to-KH pl
 
 # === Optional (safe) ===
 /ip settings set rp-filter=loose
-
 ```
-# MikroTik Multi-Country Exit Router (Cambodia → World)  
-**Production-Ready · RouterOS 7.x · November 2025**  
-Real fixed public IPs per VLAN/device · One routing table per country · Easy to add new countries in 30 seconds  
 
-Tested and running 24/7 in Cambodia (KH) since 2025.
+## 2. Singapore MikroTik (SG)
+```routeros
+/system identity set name=SG-Exit-Router
+
+# Add all your Singapore public IPs as /32 (example .10 – .20)
+/ip address
+add address=156.123.45.10/32 interface=ether1 comment="Cambodia VLAN20"
+add address=156.123.45.11/32 interface=ether1
+add address=156.123.45.12/32 interface=ether1
+# ... continue up to .20 or more
+
+# IPIP tunnel back to Cambodia
+/interface tunnel
+add name=tunnel-KH \
+    local-address=156.123.45.1 \
+    remote-address=203.0.113.50 \
+    keepalive=10s,3 mtu=1476 comment="Tunnel from Cambodia"
+
+/ip address
+add address=10.1.0.1/30 interface=tunnel-KH
+
+# Allow the tunnel
+/ip firewall filter
+add chain=input action=accept protocol=ipencap in-interface=ether1 src-address=203.0.113.50 place-before=0
+add chain=input action=accept src-address=10.1.0.0/30 in-interface=tunnel-KH place-before=0
+
+/ip settings set rp-filter=loose
+```
+
+## 2. USA MikroTik (US)
+```
+/system identity set name=US-Exit-Router
+
+# Add all your USA public IPs as /32 (example .20 – .30)
+/ip address
+add address=209.123.67.20/32 interface=ether1 comment="Cambodia VLAN30"
+add address=209.123.67.21/32 interface=ether1
+add address=209.123.67.22/32 interface=ether1
+# ... continue up to .30 or more
+
+# IPIP tunnel back to Cambodia
+/interface tunnel
+add name=tunnel-KH \
+    local-address=209.123.67.1 \
+    remote-address=203.0.113.50 \
+    keepalive=10s,3 mtu=1476 comment="Tunnel from Cambodia"
+
+/ip address
+add address=10.2.0.1/30 interface=tunnel-KH
+
+# Allow the tunnel
+/ip firewall filter
+add chain=input action=accept protocol=ipencap in-interface=ether1 src-address=203.0.113.50 place-before=0
+add chain=input action=accept src-address=10.2.0.0/30 in-interface=tunnel-KH place-before=0
+
+/ip settings set rp-filter=loose
+```
+
+## 3. Japan MikroTik (JP)
+```
+/system identity set name=JP-Exit-Router
+
+# Add all your Japan public IPs as /32 (example .100 – .200)
+/ip address
+add address=103.45.67.100/32 interface=ether1 comment="Cambodia VLAN40"
+add address=103.45.67.101/32 interface=ether1 comment="Trading PC"
+add address=103.45.67.102/32 interface=ether1
+# ... continue as many as you have
+
+# IPIP tunnel back to Cambodia
+/interface tunnel
+add name=tunnel-KH \
+    local-address=103.45.67.89 \
+    remote-address=203.0.113.50 \
+    keepalive=10s,3 mtu=1476 comment="Tunnel from Cambodia"
+
+/ip address
+add address=10.99.0.1/30 interface=tunnel-KH
+
+# Allow the tunnel
+/ip firewall filter
+add chain=input action=accept protocol=ipencap in-interface=ether1 src-address=203.0.113.50 place-before=0
+add chain=input action=accept src-address=10.99.0.0/30 in-interface=tunnel-KH place-before=0
+
+/ip settings set rp-filter=loose
+```
 
 ### Current Setup Overview
 | Location       | Tunnel Peer IP       | Tunnel Local IPs | Public IPs used for 1:1 NAT       | Example VLANs / Devices                     |
